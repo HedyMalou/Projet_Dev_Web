@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Étudiant — Plateforme Stages CY Tech</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bleu: #1a3a5c;
+      --bleu-clair: #2d6a9f;
+      --bordure: #d1dce8;
+      --texte: #1c1c1c;
+      --gris: #6b7280;
+      --bg: #f0f4f8;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--texte);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: var(--bleu);
+      position: fixed;
+      top: 0; left: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 24px 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 16px;
+    }
+
+    .logo-carre {
+      width: 34px; height: 34px;
+      background: white;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'DM Serif Display', serif;
+      font-size: 15px;
+      color: var(--bleu);
+      font-weight: 700;
+    }
+
+    .logo-texte {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 24px;
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.07);
+      color: white;
+    }
+
+    .nav-item.active {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border-left-color: white;
+    }
+
+    .nav-icon {
+      width: 18px; height: 18px;
+      opacity: 0.8;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .user-nom {
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .btn-deconnexion {
+      width: 100%;
+      padding: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    .btn-deconnexion:hover {
+      background: rgba(255,255,255,0.14);
+      color: white;
+    }
+
+    /* CONTENU PRINCIPAL */
+    .main {
+      margin-left: 240px;
+      padding: 32px;
+      min-height: 100vh;
+    }
+
+    .page-header {
+      margin-bottom: 28px;
+    }
+
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;
+      color: var(--texte);
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      font-size: 14px;
+      color: var(--gris);
+    }
+
+    /* CARTES KPI */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px 24px;
+      border: 0.5px solid var(--bordure);
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      color: var(--gris);
+      font-weight: 500;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .kpi-valeur {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--texte);
+      margin-bottom: 4px;
+    }
+
+    .kpi-sous {
+      font-size: 12px;
+      color: var(--gris);
+    }
+
+    /* BARRE DE PROGRESSION DOSSIER */
+    .progression-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      border: 0.5px solid var(--bordure);
+      margin-bottom: 28px;
+    }
+
+    .progression-titre {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--texte);
+      margin-bottom: 20px;
+    }
+
+    .etapes {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .etape {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+    }
+
+    .etape:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: var(--bordure);
+      z-index: 0;
+    }
+
+    .etape:not(:last-child).done::after {
+      background: var(--bleu-clair);
+    }
+
+    .etape-cercle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--bordure);
+      background: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gris);
+      position: relative;
+      z-index: 1;
+      margin-bottom: 8px;
+    }
+
+    .etape.done .etape-cercle {
+      background: var(--bleu-clair);
+      border-color: var(--bleu-clair);
+      color: white;
+    }
+
+    .etape.current .etape-cercle {
+      background: white;
+      border-color: var(--bleu-clair);
+      color: var(--bleu-clair);
+    }
+
+    .etape-label {
+      font-size: 11px;
+      color: var(--gris);
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .etape.done .etape-label { color: var(--bleu-clair); }
+    .etape.current .etape-label { color: var(--bleu); font-weight: 600; }
+
+    /* SECTION RECHERCHE */
+    .section-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      border: 0.5px solid var(--bordure);
+      margin-bottom: 28px;
+    }
+
+    .section-titre {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--texte);
+      margin-bottom: 16px;
+    }
+
+    .recherche-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .form-label-sm {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gris);
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .form-control, .form-select {
+      border: 1.5px solid var(--bordure);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--texte);
+      background: #fafcff;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--bleu-clair);
+      box-shadow: 0 0 0 3px rgba(45,106,159,0.1);
+      outline: none;
+    }
+
+    .btn-chercher {
+      padding: 9px 20px;
+      background: var(--bleu);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-chercher:hover { background: var(--bleu-clair); }
+
+    /* OFFRES */
+    .offres-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .offre-card {
+      background: white;
+      border: 0.5px solid var(--bordure);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.15s;
+    }
+
+    .offre-card:hover { border-color: var(--bleu-clair); }
+
+    .offre-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .offre-titre {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--texte);
+    }
+
+    .badge-statut {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .badge-nouveau {
+      background: #e8f0f7;
+      color: var(--bleu-clair);
+    }
+
+    .badge-postule {
+      background: #f0fdf4;
+      color: #16a34a;
+    }
+
+    .offre-entreprise {
+      font-size: 13px;
+      color: var(--gris);
+      margin-bottom: 10px;
+    }
+
+    .offre-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--bg);
+      color: var(--gris);
+      border: 0.5px solid var(--bordure);
+    }
+
+    .offre-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .offre-date {
+      font-size: 11px;
+      color: var(--gris);
+    }
+
+    .btn-voir {
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1.5px solid var(--bleu);
+      color: var(--bleu);
+      background: white;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .btn-voir:hover {
+      background: var(--bleu);
+      color: white;
+    }
+
+    .btn-postuler {
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      background: var(--bleu);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-postuler:hover { background: var(--bleu-clair); }
+
+    /* RESPONSIVE */
+    @media (max-width: 992px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 20px; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .recherche-grid { grid-template-columns: 1fr 1fr; }
+      .offres-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 576px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .recherche-grid { grid-template-columns: 1fr; }
+      .etapes { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-carre">CY</div>
+    <span class="logo-texte">Plateforme Stages</span>
+  </div>
+
+  <a href="dashboard_etudiant.php" class="nav-item active">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+    </svg>
+    Tableau de bord
+  </a>
+
+  <a href="offres.php" class="nav-item">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    Offres de stage
+  </a>
+
+  <a href="mon_dossier.php" class="nav-item">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14,2 14,8 20,8"/>
+    </svg>
+    Mon dossier
+  </a>
+
+  <a href="documents.php" class="nav-item">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+    Documents
+  </a>
+
+  <a href="profil.php" class="nav-item">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    Mon profil
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar">HO</div>
+      <div>
+        <div class="user-nom">Hedy Ouerghi</div>
+        <div class="user-role">Étudiant · ING1</div>
+      </div>
+    </div>
+    <a href="backend/logout.php" class="btn-deconnexion">Déconnexion</a>
+  </div>
+</nav>
+
+<!-- CONTENU PRINCIPAL -->
+<main class="main">
+
+  <div class="page-header">
+    <h1>Bonjour, Hedy 👋</h1>
+    <p>Voici un résumé de votre activité sur la plateforme.</p>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Candidatures envoyées</div>
+      <div class="kpi-valeur">3</div>
+      <div class="kpi-sous">dont 1 en cours de validation</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Offres disponibles</div>
+      <div class="kpi-valeur">24</div>
+      <div class="kpi-sous">correspondant à votre profil</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Documents déposés</div>
+      <div class="kpi-valeur">2</div>
+      <div class="kpi-sous">sur 4 requis</div>
+    </div>
+  </div>
+
+  <!-- PROGRESSION DOSSIER -->
+  <div class="progression-card">
+    <div class="progression-titre">Avancement de mon dossier</div>
+    <div class="etapes">
+      <div class="etape done">
+        <div class="etape-cercle">✓</div>
+        <div class="etape-label">Candidature</div>
+      </div>
+      <div class="etape done">
+        <div class="etape-cercle">✓</div>
+        <div class="etape-label">Convention</div>
+      </div>
+      <div class="etape current">
+        <div class="etape-cercle">3</div>
+        <div class="etape-label">En stage</div>
+      </div>
+      <div class="etape">
+        <div class="etape-cercle">4</div>
+        <div class="etape-label">Rapport</div>
+      </div>
+      <div class="etape">
+        <div class="etape-cercle">5</div>
+        <div class="etape-label">Évaluation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECHERCHE D'OFFRES -->
+  <div class="section-card">
+    <div class="section-titre">Rechercher une offre de stage</div>
+    <form action="offres.php" method="GET">
+      <div class="recherche-grid">
+        <div>
+          <label class="form-label-sm">Mots-clés</label>
+          <input type="text" name="q" class="form-control" placeholder="PHP, React, Marketing...">
+        </div>
+        <div>
+          <label class="form-label-sm">Filière</label>
+          <select name="filiere" class="form-select">
+            <option value="">Toutes</option>
+            <option>Informatique</option>
+            <option>Mathématiques</option>
+            <option>Génie Civil</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label-sm">Durée</label>
+          <select name="duree" class="form-select">
+            <option value="">Toutes</option>
+            <option>1 mois</option>
+            <option>2 mois</option>
+            <option>3 mois</option>
+            <option>6 mois</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label-sm">Lieu</label>
+          <input type="text" name="lieu" class="form-control" placeholder="Paris, Remote...">
+        </div>
+        <div>
+          <label class="form-label-sm">&nbsp;</label>
+          <button type="submit" class="btn-chercher">Rechercher</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- OFFRES RÉCENTES -->
+  <div class="section-titre" style="margin-bottom:14px;">Offres récentes</div>
+  <div class="offres-grid">
+
+    <div class="offre-card">
+      <div class="offre-header">
+        <div class="offre-titre">Développeur Web PHP</div>
+        <span class="badge-statut badge-postule">Postulé</span>
+      </div>
+      <div class="offre-entreprise">TechCorp · Paris</div>
+      <div class="offre-tags">
+        <span class="tag">PHP</span>
+        <span class="tag">MySQL</span>
+        <span class="tag">Bootstrap</span>
+        <span class="tag">3 mois</span>
+      </div>
+      <div class="offre-footer">
+        <span class="offre-date">Publié le 15/03/2026</span>
+        <a href="offre_detail.php?id=1" class="btn-voir">Voir</a>
+      </div>
+    </div>
+
+    <div class="offre-card">
+      <div class="offre-header">
+        <div class="offre-titre">Développeur Front-end</div>
+        <span class="badge-statut badge-nouveau">Nouveau</span>
+      </div>
+      <div class="offre-entreprise">TechCorp · Remote</div>
+      <div class="offre-tags">
+        <span class="tag">HTML</span>
+        <span class="tag">CSS</span>
+        <span class="tag">JavaScript</span>
+        <span class="tag">2 mois</span>
+      </div>
+      <div class="offre-footer">
+        <span class="offre-date">Publié le 20/03/2026</span>
+        <button class="btn-postuler">Postuler</button>
+      </div>
+    </div>
+
+    <div class="offre-card">
+      <div class="offre-header">
+        <div class="offre-titre">Data Analyst Junior</div>
+        <span class="badge-statut badge-nouveau">Nouveau</span>
+      </div>
+      <div class="offre-entreprise">Capgemini · Lyon</div>
+      <div class="offre-tags">
+        <span class="tag">Python</span>
+        <span class="tag">SQL</span>
+        <span class="tag">Excel</span>
+        <span class="tag">6 mois</span>
+      </div>
+      <div class="offre-footer">
+        <span class="offre-date">Publié le 22/03/2026</span>
+        <button class="btn-postuler">Postuler</button>
+      </div>
+    </div>
+
+    <div class="offre-card">
+      <div class="offre-header">
+        <div class="offre-titre">Cybersécurité</div>
+        <span class="badge-statut badge-nouveau">Nouveau</span>
+      </div>
+      <div class="offre-entreprise">Thales · Vélizy</div>
+      <div class="offre-tags">
+        <span class="tag">Réseau</span>
+        <span class="tag">Linux</span>
+        <span class="tag">Pentest</span>
+        <span class="tag">3 mois</span>
+      </div>
+      <div class="offre-footer">
+        <span class="offre-date">Publié le 24/03/2026</span>
+        <button class="btn-postuler">Postuler</button>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
