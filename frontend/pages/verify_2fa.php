@@ -8,12 +8,43 @@ $code_saisi = trim($_POST['code_2fa'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $code_saisi) {
 
-    // DEBUG temporaire — à supprimer après
-    $stmt = $pdo->prepare("SELECT * FROM AUTH_CODE WHERE id_utilisateur = ? AND code = ? AND utilise = 0 AND date_expiration > NOW()");
+    if (!$user_id || !$role || strlen($code_saisi) !== 6) {
+        header("Location: verify_2fa.php?uid=$user_id&role=" . urlencode($role) . "&email=" . urlencode($email) . "&erreur=code");
+        exit;
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT * FROM AUTH_CODE
+        WHERE id_utilisateur = ?
+        AND code = ?
+        AND utilise = 0
+        AND date_expiration > NOW()
+    ");
     $stmt->execute([$user_id, $code_saisi]);
     $auth = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    die("DEBUG: uid=$user_id | role=$role | code_saisi=$code_saisi | auth=" . var_export($auth, true));
+    if (!$auth) {
+        header("Location: verify_2fa.php?uid=$user_id&role=" . urlencode($role) . "&email=" . urlencode($email) . "&erreur=code");
+        exit;
+    }
+
+    $stmt = $pdo->prepare("UPDATE AUTH_CODE SET utilise = 1 WHERE id = ?");
+    $stmt->execute([$auth['id']]);
+
+    session_start();
+    $_SESSION['user_id'] = $user_id;
+    $_SESSION['role']    = $role;
+
+    $redirections = [
+        'etudiant'   => 'dashboard_etudiant.php',
+        'entreprise' => 'dashboard_entreprise.php',
+        'tuteur'     => 'dashboard_tuteur.php',
+        'jury'       => 'dashboard_tuteur.php',
+        'admin'      => 'dashboard_admin.php',
+    ];
+
+    header('Location: ' . ($redirections[$role] ?? 'login.html'));
+    exit;
 }
 ?>
 <!DOCTYPE html>
