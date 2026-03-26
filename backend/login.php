@@ -25,18 +25,18 @@ if (!$user || !password_verify($mdp, $user['mot_de_passe'])) {
 }
 
 $code = strval(rand(100000, 999999));
-$expiration = date('Y-m-d H:i:s', time() + 600);
 
+// On utilise directement MySQL pour générer la date d'expiration
+// comme ça c'est cohérent avec NOW() dans la vérification
 $stmt = $pdo->prepare("DELETE FROM AUTH_CODE WHERE id_utilisateur = ?");
 $stmt->execute([$user['id']]);
 
-$stmt = $pdo->prepare("INSERT INTO AUTH_CODE (id_utilisateur, code, date_expiration) VALUES (?, ?, ?)");
-$stmt->execute([$user['id'], $code, $expiration]);
+$stmt = $pdo->prepare("INSERT INTO AUTH_CODE (id_utilisateur, code, date_expiration) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))");
+$stmt->execute([$user['id'], $code]);
 
 mail($user['email'], "Code connexion - Plateforme Stages",
     "Bonjour " . $user['prenom'] . ",\n\nVotre code : " . $code . "\n\nValable 10 minutes.");
 
-// On passe user_id et role dans l'URL pour les retrouver sur la page A2F
 $uid = $user['id'];
 $r   = urlencode($user['role']);
 $e   = urlencode($user['email']);
