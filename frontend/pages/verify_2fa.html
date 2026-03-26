@@ -276,14 +276,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Afficher l'email depuis sessionStorage (mis par login.php)
+  // Récupération de l'email et navigation entre les cases
   const email = sessionStorage.getItem('email_2fa');
   if (email) {
-    const masque = email.replace(/(.{2})(.*)(@.*)/, '$1***$3');
-    document.getElementById('email-affiche').textContent = masque;
+    document.getElementById('email-affiche').textContent = email;
   }
 
-  // Navigation automatique entre les cases
   const inputs = document.querySelectorAll('.code-input');
   const btnValider = document.getElementById('btn-valider');
 
@@ -296,10 +294,11 @@
       } else {
         this.classList.remove('rempli');
       }
-      verifierComplet();
+      const code = Array.from(inputs).map(i => i.value).join('');
+      document.getElementById('code-complet').value = code;
+      btnValider.disabled = code.length < 6;
     });
 
-    // Retour arrière
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Backspace' && !this.value && i > 0) {
         inputs[i - 1].value = '';
@@ -307,29 +306,8 @@
         inputs[i - 1].focus();
       }
     });
-
-    // Coller un code copié
-    input.addEventListener('paste', function(e) {
-      e.preventDefault();
-      const colle = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
-      colle.split('').forEach((c, j) => {
-        if (inputs[j]) {
-          inputs[j].value = c;
-          inputs[j].classList.add('rempli');
-        }
-      });
-      verifierComplet();
-      if (inputs[colle.length - 1]) inputs[colle.length - 1].focus();
-    });
   });
 
-  function verifierComplet() {
-    const code = Array.from(inputs).map(i => i.value).join('');
-    document.getElementById('code-complet').value = code;
-    btnValider.disabled = code.length < 6;
-  }
-
-  // Validation du formulaire
   document.getElementById('form2fa').addEventListener('submit', function(e) {
     const code = document.getElementById('code-complet').value;
     if (code.length < 6) {
@@ -338,7 +316,6 @@
     }
   });
 
-  // Compte à rebours 10 minutes
   let secondes = 600;
   const countdown = document.getElementById('countdown');
   const interval = setInterval(() => {
@@ -355,7 +332,6 @@
     }
   }, 1000);
 
-  // Renvoi du code
   document.getElementById('btn-renvoyer').addEventListener('click', function(e) {
     e.preventDefault();
     this.textContent = 'Code renvoyé !';
@@ -364,7 +340,6 @@
       this.textContent = 'Renvoyer';
       this.style.pointerEvents = 'auto';
     }, 30000);
-    // En PHP : fetch('backend/resend_2fa.php')
   });
 </script>
 </body>
