@@ -243,7 +243,7 @@
     Code vérifié ! Redirection en cours...
   </div>
 
-  <form action="backend/verify_2fa.php" method="POST" id="form2fa">
+  <form action="../../backend/verify_2fa.php" method="POST" id="form2fa">
     <!-- Champ caché qui reçoit le code assemblé -->
     <input type="hidden" name="code_2fa" id="code-complet">
 
@@ -280,6 +280,12 @@
   const email = sessionStorage.getItem('email_2fa');
   if (email) {
     document.getElementById('email-affiche').textContent = email;
+  }
+
+  // Affichage erreur depuis PHP
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('erreur') === 'code') {
+    document.getElementById('alerte-erreur').style.display = 'block';
   }
 
   const inputs = document.querySelectorAll('.code-input');
