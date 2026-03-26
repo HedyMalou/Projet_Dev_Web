@@ -35,19 +35,11 @@ $stmt->execute([$user['id'], $code, $expiration]);
 
 mail($user['email'], "Code connexion - Plateforme Stages",
     "Bonjour " . $user['prenom'] . ",\n\nVotre code : " . $code . "\n\nValable 10 minutes.");
+
+// On passe user_id et role dans l'URL pour les retrouver sur la page A2F
+$uid = $user['id'];
+$r   = urlencode($user['role']);
+$e   = urlencode($user['email']);
+header("Location: ../frontend/pages/verify_2fa.php?uid=$uid&role=$r&email=$e");
+exit;
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Redirection...</title>
-</head>
-<body>
-<form id="f" action="../frontend/pages/verify_2fa.php" method="POST">
-  <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-  <input type="hidden" name="role"    value="<?= htmlspecialchars($user['role']) ?>">
-  <input type="hidden" name="email"   value="<?= htmlspecialchars($user['email']) ?>">
-</form>
-<script>document.getElementById('f').submit();</script>
-</body>
-</html>

@@ -1,20 +1,54 @@
 <?php
 require_once '../../backend/connexion.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: login.html');
-    exit;
-}
-
-$user_id    = (int)($_POST['user_id'] ?? 0);
-$role       = trim($_POST['role'] ?? '');
-$email      = trim($_POST['email'] ?? '');
+// Récupération des infos depuis l'URL (GET) ou le formulaire (POST)
+$user_id = (int)($_GET['uid']   ?? $_POST['uid']   ?? 0);
+$role    = trim($_GET['role']   ?? $_POST['role']   ?? '');
+$email   = trim($_GET['email']  ?? $_POST['email']  ?? '');
 $code_saisi = trim($_POST['code_2fa'] ?? '');
 
-// Si le code n'est pas encore soumis, on affiche la page A2F
-if (!$code_saisi) {
-    // Affiche la page verify avec les champs cachés
-    ?>
+// Si le formulaire est soumis avec le code
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $code_saisi) {
+
+    if (!$user_id || !$role || strlen($code_saisi) !== 6) {
+        header("Location: verify_2fa.php?uid=$user_id&role=" . urlencode($role) . "&email=" . urlencode($email) . "&erreur=code");
+        exit;
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT * FROM AUTH_CODE
+        WHERE id_utilisateur = ?
+        AND code = ?
+        AND utilise = 0
+        AND date_expiration > NOW()
+    ");
+    $stmt->execute([$user_id, $code_saisi]);
+    $auth = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$auth) {
+        header("Location: verify_2fa.php?uid=$user_id&role=" . urlencode($role) . "&email=" . urlencode($email) . "&erreur=code");
+        exit;
+    }
+
+    $stmt = $pdo->prepare("UPDATE AUTH_CODE SET utilise = 1 WHERE id = ?");
+    $stmt->execute([$auth['id']]);
+
+    session_start();
+    $_SESSION['user_id'] = $user_id;
+    $_SESSION['role']    = $role;
+
+    $redirections = [
+        'etudiant'   => 'dashboard_etudiant.php',
+        'entreprise' => 'dashboard_entreprise.php',
+        'tuteur'     => 'dashboard_tuteur.php',
+        'jury'       => 'dashboard_tuteur.php',
+        'admin'      => 'dashboard_admin.php',
+    ];
+
+    header('Location: ' . ($redirections[$role] ?? 'login.html'));
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -64,14 +98,12 @@ if (!$code_saisi) {
   <h2>Vérification en deux étapes</h2>
   <p class="sous-titre">Un code à 6 chiffres a été envoyé à <span><?= htmlspecialchars($email) ?></span>. Entrez-le ci-dessous.</p>
 
-  <div class="alerte-erreur" id="alerte-erreur">
-    Code incorrect ou expiré. Veuillez réessayer.
-  </div>
+  <div class="alerte-erreur" id="alerte-erreur">Code incorrect ou expiré.</div>
 
-  <form action="verify_2fa.php" method="POST" id="form2fa">
-    <input type="hidden" name="user_id" value="<?= $user_id ?>">
-    <input type="hidden" name="role"    value="<?= htmlspecialchars($role) ?>">
-    <input type="hidden" name="email"   value="<?= htmlspecialchars($email) ?>">
+  <form method="POST">
+    <input type="hidden" name="uid"   value="<?= $user_id ?>">
+    <input type="hidden" name="role"  value="<?= htmlspecialchars($role) ?>">
+    <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
     <input type="hidden" name="code_2fa" id="code-complet">
 
     <div class="code-inputs">
@@ -92,12 +124,12 @@ if (!$code_saisi) {
 </div>
 
 <script>
-  const inputs = document.querySelectorAll('.code-input');
-  const btn = document.getElementById('btn-valider');
-
   <?php if (isset($_GET['erreur'])): ?>
   document.getElementById('alerte-erreur').style.display = 'block';
   <?php endif; ?>
+
+  const inputs = document.querySelectorAll('.code-input');
+  const btn = document.getElementById('btn-valider');
 
   inputs.forEach((input, i) => {
     input.addEventListener('input', function() {
@@ -108,7 +140,7 @@ if (!$code_saisi) {
       } else {
         this.classList.remove('rempli');
       }
-      const code = Array.from(inputs).map(i => i.value).join('');
+      const code = Array.from(inputs).map(x => x.value).join('');
       document.getElementById('code-complet').value = code;
       btn.disabled = code.length < 6;
     });
@@ -129,55 +161,8 @@ if (!$code_saisi) {
     const m = String(Math.floor(secondes / 60)).padStart(2, '0');
     const s = String(secondes % 60).padStart(2, '0');
     countdown.textContent = m + ':' + s;
-    if (secondes <= 0) {
-      clearInterval(interval);
-      countdown.textContent = 'expiré';
-      btn.disabled = true;
-    }
+    if (secondes <= 0) { clearInterval(interval); countdown.textContent = 'expiré'; btn.disabled = true; }
   }, 1000);
 </script>
 </body>
 </html>
-    <?php
-    exit;
-}
-
-// Vérification du code soumis
-if (!$user_id || !$role || strlen($code_saisi) !== 6) {
-    header('Location: login.html?erreur=session');
-    exit;
-}
-
-$stmt = $pdo->prepare("
-    SELECT * FROM AUTH_CODE
-    WHERE id_utilisateur = ?
-    AND code = ?
-    AND utilise = 0
-    AND date_expiration > NOW()
-");
-$stmt->execute([$user_id, $code_saisi]);
-$auth = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$auth) {
-    header("Location: verify_2fa.php?erreur=code");
-    exit;
-}
-
-$stmt = $pdo->prepare("UPDATE AUTH_CODE SET utilise = 1 WHERE id = ?");
-$stmt->execute([$auth['id']]);
-
-session_start();
-$_SESSION['user_id'] = $user_id;
-$_SESSION['role']    = $role;
-
-$redirections = [
-    'etudiant'   => 'dashboard_etudiant.php',
-    'entreprise' => 'dashboard_entreprise.php',
-    'tuteur'     => 'dashboard_tuteur.php',
-    'jury'       => 'dashboard_tuteur.php',
-    'admin'      => 'dashboard_admin.php',
-];
-
-header('Location: ' . ($redirections[$role] ?? 'login.html'));
-exit;
-?>
