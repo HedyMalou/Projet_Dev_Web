@@ -1,52 +1,19 @@
 <?php
 require_once '../../backend/connexion.php';
 
-// Récupération des infos depuis l'URL (GET) ou le formulaire (POST)
-$user_id = (int)($_GET['uid']   ?? $_POST['uid']   ?? 0);
-$role    = trim($_GET['role']   ?? $_POST['role']   ?? '');
-$email   = trim($_GET['email']  ?? $_POST['email']  ?? '');
+$user_id    = (int)($_GET['uid']  ?? $_POST['uid']  ?? 0);
+$role       = trim($_GET['role']  ?? $_POST['role']  ?? '');
+$email      = trim($_GET['email'] ?? $_POST['email'] ?? '');
 $code_saisi = trim($_POST['code_2fa'] ?? '');
 
-// Si le formulaire est soumis avec le code
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $code_saisi) {
 
-    if (!$user_id || !$role || strlen($code_saisi) !== 6) {
-        header("Location: verify_2fa.php?uid=$user_id&role=" . urlencode($role) . "&email=" . urlencode($email) . "&erreur=code");
-        exit;
-    }
-
-    $stmt = $pdo->prepare("
-        SELECT * FROM AUTH_CODE
-        WHERE id_utilisateur = ?
-        AND code = ?
-        AND utilise = 0
-        AND date_expiration > NOW()
-    ");
+    // DEBUG temporaire — à supprimer après
+    $stmt = $pdo->prepare("SELECT * FROM AUTH_CODE WHERE id_utilisateur = ? AND code = ? AND utilise = 0 AND date_expiration > NOW()");
     $stmt->execute([$user_id, $code_saisi]);
     $auth = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$auth) {
-        header("Location: verify_2fa.php?uid=$user_id&role=" . urlencode($role) . "&email=" . urlencode($email) . "&erreur=code");
-        exit;
-    }
-
-    $stmt = $pdo->prepare("UPDATE AUTH_CODE SET utilise = 1 WHERE id = ?");
-    $stmt->execute([$auth['id']]);
-
-    session_start();
-    $_SESSION['user_id'] = $user_id;
-    $_SESSION['role']    = $role;
-
-    $redirections = [
-        'etudiant'   => 'dashboard_etudiant.php',
-        'entreprise' => 'dashboard_entreprise.php',
-        'tuteur'     => 'dashboard_tuteur.php',
-        'jury'       => 'dashboard_tuteur.php',
-        'admin'      => 'dashboard_admin.php',
-    ];
-
-    header('Location: ' . ($redirections[$role] ?? 'login.html'));
-    exit;
+    die("DEBUG: uid=$user_id | role=$role | code_saisi=$code_saisi | auth=" . var_export($auth, true));
 }
 ?>
 <!DOCTYPE html>
@@ -96,14 +63,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $code_saisi) {
     <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><polyline points="2,4 12,13 22,4"/></svg>
   </div>
   <h2>Vérification en deux étapes</h2>
-  <p class="sous-titre">Un code à 6 chiffres a été envoyé à <span><?= htmlspecialchars($email) ?></span>. Entrez-le ci-dessous.</p>
+  <p class="sous-titre">Un code à 6 chiffres a été envoyé à <span><?= htmlspecialchars($email) ?></span>.</p>
 
   <div class="alerte-erreur" id="alerte-erreur">Code incorrect ou expiré.</div>
 
   <form method="POST">
-    <input type="hidden" name="uid"   value="<?= $user_id ?>">
-    <input type="hidden" name="role"  value="<?= htmlspecialchars($role) ?>">
-    <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
+    <input type="hidden" name="uid"      value="<?= $user_id ?>">
+    <input type="hidden" name="role"     value="<?= htmlspecialchars($role) ?>">
+    <input type="hidden" name="email"    value="<?= htmlspecialchars($email) ?>">
     <input type="hidden" name="code_2fa" id="code-complet">
 
     <div class="code-inputs">
