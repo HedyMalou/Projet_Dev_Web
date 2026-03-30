@@ -102,9 +102,17 @@
             @if(in_array($offre->id, $offres_postulees))
               <span class="badge-validee">Postulé</span>
             @else
-              <form method="POST" action="{{ route('etudiant.postuler') }}" style="display:inline;">
+              <form method="POST" action="{{ route('etudiant.postuler') }}" enctype="multipart/form-data" style="display:grid;gap:6px;min-width:220px;">
                 @csrf
                 <input type="hidden" name="id_offre" value="{{ $offre->id }}">
+                <div>
+                  <label class="form-label-sm">CV (PDF/DOC)</label>
+                  <input type="file" name="cv" class="form-control" accept=".pdf,.doc,.docx" required>
+                </div>
+                <div>
+                  <label class="form-label-sm">Lettre de motivation (PDF/DOC)</label>
+                  <input type="file" name="lettre_motivation" class="form-control" accept=".pdf,.doc,.docx" required>
+                </div>
                 <button type="submit" class="btn-action">Postuler</button>
               </form>
             @endif

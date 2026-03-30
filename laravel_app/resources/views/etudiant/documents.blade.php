@@ -70,17 +70,28 @@
     <table>
       <thead>
         <tr>
-          <th>Nom</th>
+          <th>Type</th>
+          <th>Fichier</th>
           <th>Stage</th>
           <th>Déposé le</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
         @foreach($documents as $doc)
         <tr>
-          <td>{{ $doc->nom_fichier }}</td>
+          <td>
+            @php
+              $labels = ['cv' => 'CV', 'lettre_motivation' => 'Lettre de motivation', 'rapport' => 'Rapport', 'resume' => 'Résumé', 'fiche_evaluation' => 'Fiche d\'évaluation', 'convention' => 'Convention', 'autre' => 'Autre'];
+            @endphp
+            {{ $labels[$doc->type] ?? $doc->type }}
+          </td>
+          <td>{{ basename($doc->chemin_fichier) }}</td>
           <td>{{ $doc->candidature->offre->titre ?? '—' }}</td>
           <td>{{ \Carbon\Carbon::parse($doc->date_depot)->format('d/m/Y') }}</td>
+          <td>
+            <a href="{{ route('etudiant.documents.telecharger', $doc->id) }}" class="btn-action">Télécharger</a>
+          </td>
         </tr>
         @endforeach
       </tbody>

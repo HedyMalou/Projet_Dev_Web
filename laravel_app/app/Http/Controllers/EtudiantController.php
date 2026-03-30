@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Etudiant;
 use App\Models\Candidature;
 use App\Models\Document;
@@ -108,7 +109,11 @@ class EtudiantController extends Controller
 
     public function postuler(Request $request)
     {
-        $request->validate(['id_offre' => 'required|integer|exists:OFFRE_STAGE,id']);
+        $request->validate([
+            'id_offre'          => 'required|integer|exists:OFFRE_STAGE,id',
+            'cv'                => 'required|file|mimes:pdf,doc,docx|max:5120',
+            'lettre_motivation' => 'required|file|mimes:pdf,doc,docx|max:5120',
+        ]);
 
         $etudiant = $this->getEtudiant();
 
@@ -120,11 +125,30 @@ class EtudiantController extends Controller
             return redirect()->route('etudiant.dashboard')->with('erreur', 'Vous avez déjà postulé à cette offre.');
         }
 
-        Candidature::create([
+        $candidature = Candidature::create([
             'id_etudiant' => $etudiant->id,
             'id_offre'    => $request->id_offre,
         ]);
 
-        return redirect()->route('etudiant.dashboard')->with('succes', 'Candidature envoyée !');
+        foreach (['cv', 'lettre_motivation'] as $type) {
+            $chemin = $request->file($type)->store('uploads');
+            Document::create([
+                'id_candidature' => $candidature->id,
+                'type'           => $type,
+                'chemin_fichier' => $chemin,
+            ]);
+        }
+
+        return redirect()->route('etudiant.dashboard')->with('succes', 'Candidature envoyée avec vos documents !');
+    }
+
+    public function telechargerDocument(int $id)
+    {
+        $etudiant = $this->getEtudiant();
+
+        $document = Document::whereHas('candidature', fn($q) => $q->where('id_etudiant', $etudiant->id))
+            ->findOrFail($id);
+
+        return Storage::download($document->chemin_fichier);
     }
 }

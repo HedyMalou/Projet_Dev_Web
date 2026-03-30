@@ -37,8 +37,9 @@ Route::middleware('auth.check')->group(function () {
     Route::get('/etudiant/mon-dossier',         [EtudiantController::class, 'monDossier'])->name('etudiant.dossier');
     Route::get('/etudiant/documents',           [EtudiantController::class, 'documents'])->name('etudiant.documents');
     Route::get('/etudiant/profil',              [EtudiantController::class, 'profil'])->name('etudiant.profil');
-    Route::post('/etudiant/postuler',           [EtudiantController::class, 'postuler'])->name('etudiant.postuler');
-    Route::post('/etudiant/documents/upload',   fn() => back()->with('erreur', 'Fonctionnalité à venir.'))->name('etudiant.documents.upload');
+    Route::post('/etudiant/postuler',                          [EtudiantController::class, 'postuler'])->name('etudiant.postuler');
+    Route::get('/etudiant/documents/{id}/telecharger',         [EtudiantController::class, 'telechargerDocument'])->name('etudiant.documents.telecharger');
+    Route::post('/etudiant/documents/upload',                  fn() => back()->with('erreur', 'Fonctionnalité à venir.'))->name('etudiant.documents.upload');
 
     // ── Entreprise ────────────────────────────────────────────────────────────
     Route::get('/entreprise/dashboard',            [EntrepriseController::class, 'dashboard'])->name('entreprise.dashboard');
