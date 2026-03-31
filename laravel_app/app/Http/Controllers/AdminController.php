@@ -23,9 +23,36 @@ class AdminController extends Controller
         $nb_stages    = Candidature::where('statut','validee')->count();
         $nb_users     = Utilisateur::count();
 
-        $users = Utilisateur::orderBy('created_at','desc')->get();
+        $users = Utilisateur::where('valide', 1)->orderBy('created_at','desc')->get();
 
-        return view('admin.dashboard', compact('admin','nb_etudiants','nb_offres','nb_stages','nb_users','users'));
+        $comptes_en_attente = Utilisateur::where('valide', 0)->orderBy('created_at','desc')->get();
+
+        $candidatures_validees = Candidature::with(['etudiant.utilisateur','offre'])
+            ->where('statut','validee')
+            ->get();
+
+        $tuteurs = Tuteur::with('utilisateur')->get();
+
+        return view('admin.dashboard', compact(
+            'admin','nb_etudiants','nb_offres','nb_stages','nb_users',
+            'users','comptes_en_attente','candidatures_validees','tuteurs'
+        ));
+    }
+
+    // ── Validation comptes ────────────────────────────────────────────────────
+
+    public function validerCompte(int $id)
+    {
+        Utilisateur::findOrFail($id)->update(['valide' => 1]);
+
+        return redirect()->route('admin.dashboard')->with('succes', 'Compte validé.');
+    }
+
+    public function refuserCompte(int $id)
+    {
+        Utilisateur::findOrFail($id)->delete();
+
+        return redirect()->route('admin.dashboard')->with('succes', 'Compte refusé et supprimé.');
     }
 
     // ── Gestion utilisateurs ──────────────────────────────────────────────────

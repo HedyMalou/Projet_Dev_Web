@@ -15,7 +15,11 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Recrée le jeu de données initial du schema.sql
-     * Mot de passe par défaut : test1234
+     * Mots de passe :
+     *   - étudiants / tuteur / jury / entreprise : test1234
+     *   - admin (admin@cytech.fr) : admin1234
+     *
+     * valide=1 pour étudiants et admin, valide=0 pour tuteur/jury/entreprise
      */
     public function run(): void
     {
@@ -25,36 +29,43 @@ class DatabaseSeeder extends Seeder
             'email' => 'hedy.ouerghi@etu.cyu.fr',
             'mot_de_passe' => Hash::make('test1234'),
             'role' => 'etudiant',
+            'valide' => 1,
         ]);
         $jeremy = Utilisateur::create([
             'nom' => 'Garra', 'prenom' => 'Jeremy',
             'email' => 'jeremy.garra@etu.cyu.fr',
             'mot_de_passe' => Hash::make('test1234'),
             'role' => 'etudiant',
+            'valide' => 1,
         ]);
         $titouan = Utilisateur::create([
             'nom' => 'Ancelin', 'prenom' => 'Titouan',
             'email' => 'titouan.ancelin@etu.cyu.fr',
             'mot_de_passe' => Hash::make('test1234'),
             'role' => 'tuteur',
+            'valide' => 1,
         ]);
         $sophie = Utilisateur::create([
             'nom' => 'Martin', 'prenom' => 'Sophie',
             'email' => 'sophie.martin@etu.cyu.fr',
             'mot_de_passe' => Hash::make('test1234'),
             'role' => 'jury',
+            'valide' => 1,
         ]);
         $techcorp = Utilisateur::create([
             'nom' => 'TechCorp', 'prenom' => 'Admin',
             'email' => 'contact@techcorp.fr',
             'mot_de_passe' => Hash::make('test1234'),
             'role' => 'entreprise',
+            'valide' => 1,
         ]);
+        // Mot de passe admin : admin1234
         Utilisateur::create([
             'nom' => 'Admin', 'prenom' => 'CYTech',
             'email' => 'admin@cytech.fr',
-            'mot_de_passe' => Hash::make('test1234'),
+            'mot_de_passe' => Hash::make('admin1234'),
             'role' => 'admin',
+            'valide' => 1,
         ]);
 
         // Profils

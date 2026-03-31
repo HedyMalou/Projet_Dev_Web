@@ -50,6 +50,76 @@
   </div>
 </div>
 
+{{-- Comptes en attente de validation --}}
+@if($comptes_en_attente->isNotEmpty())
+<div class="section-card">
+  <div class="section-titre">Comptes en attente de validation ({{ $comptes_en_attente->count() }})</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Inscrit le</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach($comptes_en_attente as $u)
+      <tr>
+        <td>{{ $u->prenom }} {{ $u->nom }}</td>
+        <td>{{ $u->email }}</td>
+        <td><span class="badge-role">{{ ucfirst($u->role) }}</span></td>
+        <td>{{ \Carbon\Carbon::parse($u->created_at)->format('d/m/Y') }}</td>
+        <td style="display:flex;gap:8px;">
+          <form method="POST" action="{{ route('admin.valider-compte', $u->id) }}" style="display:inline;">
+            @csrf
+            <button type="submit" class="btn-valider">Valider</button>
+          </form>
+          <form method="POST" action="{{ route('admin.refuser-compte', $u->id) }}" style="display:inline;" onsubmit="return confirm('Refuser et supprimer ce compte ?')">
+            @csrf
+            <button type="submit" class="btn-supprimer">Refuser</button>
+          </form>
+        </td>
+      </tr>
+      @endforeach
+    </tbody>
+  </table>
+</div>
+@endif
+
+{{-- Affecter un tuteur à un étudiant --}}
+@if($candidatures_validees->isNotEmpty() && $tuteurs->isNotEmpty())
+<div class="section-card">
+  <div class="section-titre">Affecter un tuteur à un étudiant</div>
+  <form method="POST" action="{{ route('admin.affecter-tuteur') }}" style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
+    @csrf
+    <div>
+      <label style="display:block;font-size:13px;margin-bottom:4px;">Candidature validée</label>
+      <select name="id_candidature" required style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-family:inherit;">
+        @foreach($candidatures_validees as $c)
+          <option value="{{ $c->id }}">
+            {{ $c->etudiant->utilisateur->prenom ?? '' }} {{ $c->etudiant->utilisateur->nom ?? '' }}
+            — {{ $c->offre->titre ?? 'Offre #'.$c->id_offre }}
+          </option>
+        @endforeach
+      </select>
+    </div>
+    <div>
+      <label style="display:block;font-size:13px;margin-bottom:4px;">Tuteur</label>
+      <select name="id_tuteur" required style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-family:inherit;">
+        @foreach($tuteurs as $t)
+          <option value="{{ $t->id }}">
+            {{ $t->utilisateur->prenom ?? '' }} {{ $t->utilisateur->nom ?? '' }}
+          </option>
+        @endforeach
+      </select>
+    </div>
+    <button type="submit" class="btn-action">Affecter</button>
+  </form>
+</div>
+@endif
+
 {{-- Gestion utilisateurs --}}
 <div class="section-card">
   <div class="section-titre">Gestion des utilisateurs</div>

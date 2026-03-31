@@ -13,7 +13,7 @@ class Utilisateur extends Authenticatable
     const UPDATED_AT = null;
 
     protected $fillable = [
-        'nom', 'prenom', 'email', 'mot_de_passe', 'role',
+        'nom', 'prenom', 'email', 'mot_de_passe', 'role', 'valide',
     ];
 
     // On utilise mot_de_passe au lieu du champ "password" par défaut de Laravel

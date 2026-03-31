@@ -51,6 +51,13 @@ class AuthController extends Controller
                 ->withInput($request->only('email', 'role'));
         }
 
+        // Vérification validation admin
+        if ($user->valide == 0) {
+            return back()
+                ->withErrors(['email' => 'Votre compte est en attente de validation par l\'administrateur.'])
+                ->withInput($request->only('email', 'role'));
+        }
+
         // Supprimer les anciens codes A2F de cet utilisateur
         AuthCode::where('id_utilisateur', $user->id)->delete();
 
@@ -171,6 +178,7 @@ class AuthController extends Controller
             'email'        => $request->email,
             'mot_de_passe' => Hash::make($request->mot_de_passe),
             'role'         => $request->role,
+            'valide'       => $request->role === 'etudiant' ? 1 : 0,
         ]);
 
         // Créer le profil spécifique au rôle
@@ -198,7 +206,10 @@ class AuthController extends Controller
             default => null,
         };
 
-        return redirect()->route('login')
-            ->with('succes', 'Compte créé avec succès. Vous pouvez vous connecter.');
+        $message = $request->role === 'etudiant'
+            ? 'Compte créé avec succès. Vous pouvez vous connecter.'
+            : 'Compte créé. Votre accès sera activé après validation par l\'administrateur.';
+
+        return redirect()->route('login')->with('succes', $message);
     }
 }

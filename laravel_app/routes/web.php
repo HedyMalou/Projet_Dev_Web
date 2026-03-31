@@ -66,4 +66,7 @@ Route::middleware('auth.check')->group(function () {
     Route::post('/admin/supprimer-user',   [AdminController::class, 'supprimerUser'])->name('admin.supprimer-user');
     Route::post('/admin/supprimer-offre',  [AdminController::class, 'supprimerOffre'])->name('admin.supprimer-offre');
     Route::post('/admin/archiver',         [AdminController::class, 'archiver'])->name('admin.archiver');
+    Route::post('/admin/valider-compte/{id}',  [AdminController::class, 'validerCompte'])->name('admin.valider-compte');
+    Route::post('/admin/refuser-compte/{id}',  [AdminController::class, 'refuserCompte'])->name('admin.refuser-compte');
+    Route::post('/admin/affecter-tuteur',      [AdminController::class, 'affecterTuteur'])->name('admin.affecter-tuteur');
 });
