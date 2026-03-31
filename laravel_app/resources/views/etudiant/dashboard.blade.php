@@ -34,6 +34,11 @@
 @if(session('erreur'))
   <div class="alerte-erreur">{{ session('erreur') }}</div>
 @endif
+@if($errors->any())
+  <div class="alerte-erreur">
+    @foreach($errors->all() as $e) {{ $e }}<br> @endforeach
+  </div>
+@endif
 
 <div class="kpi-grid-2">
   <div class="kpi-card">
