@@ -8,15 +8,17 @@ Plateforme web de gestion et d'archivage des stages pour les étudiants, enseign
 
 Fonctionnalités principales :
 - Authentification par rôle (étudiant, tuteur, jury, entreprise, admin) avec double authentification (A2F)
+- Validation des comptes tuteur/jury/entreprise par l'administrateur
 - Dépôt et suivi de candidatures
 - Publication et gestion des offres de stage
+- Affectation des tuteurs aux étudiants par l'admin
 - Suivi pédagogique (notes, commentaires, conventions)
 - Archivage des dossiers de stage
 
 ## Équipe
 
 - **ANCELIN Titouan** — Chef de projet / Back-end (authentification, sessions, logique PHP)
-- **OUERGHI Hedy** — Front-end (interfaces HTML/CSS/JS, Bootstrap) / Back-end (scripts PHP, gestion fichiers)
+- **OUERGHI Hedy** — Front-end (interfaces HTML/CSS/JS) / Back-end (Laravel, gestion fichiers)
 - **GARRA Jeremy** — Base de données (MCD/MLD, MySQL) / Tests et documentation
 
 ## Technologies
@@ -24,7 +26,6 @@ Fonctionnalités principales :
 - **Laravel 11** (PHP 8.2+) — framework back-end
 - **Blade** — moteur de templates
 - **MySQL / MariaDB** — base de données
-- **Bootstrap 5** — composants CSS
 
 ---
 
@@ -32,64 +33,40 @@ Fonctionnalités principales :
 
 ### Prérequis
 
-| Outil       | Version minimale |
-|-------------|-----------------|
-| PHP         | 8.2             |
-| Composer    | 2.x             |
-| MySQL       | 8.0 / MariaDB 10.6 |
-| Git         | 2.x             |
+| Outil       | Version minimale       |
+|-------------|------------------------|
+| PHP         | 8.2                    |
+| Composer    | 2.x                    |
+| MySQL       | 8.0 / MariaDB 10.6     |
+| Git         | 2.x                    |
 
 ---
 
 ### Linux (Ubuntu / Debian)
 
-#### 1. Cloner le dépôt
-
 ```bash
 git clone https://github.com/HedyMalou/Projet_Dev_Web.git
 cd Projet_Dev_Web/laravel_app
-```
-
-#### 2. Installer les dépendances PHP
-
-```bash
 composer install
 ```
 
-#### 3. Configurer l'environnement
+Créer la base de données :
 
 ```bash
-cp .env.example .env
-php artisan key:generate
+mysql -u <utilisateur> -p -e "CREATE DATABASE IF NOT EXISTS stages_cytech CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-Ouvrir `.env` et renseigner les accès à la base de données :
+Adapter les credentials dans `.env` :
 
 ```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=nom_de_la_base
-DB_USERNAME=votre_utilisateur
-DB_PASSWORD=votre_mot_de_passe
+DB_USERNAME=<utilisateur>
+DB_PASSWORD=<mot_de_passe>
 ```
 
-#### 4. Créer la base de données et exécuter les migrations
+Lancer les migrations et le seed :
 
 ```bash
-mysql -u votre_utilisateur -p -e "CREATE DATABASE IF NOT EXISTS nom_de_la_base CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-php artisan migrate
-```
-
-#### 5. (Optionnel) Insérer des données de test
-
-```bash
-php artisan db:seed
-```
-
-#### 6. Lancer le serveur de développement
-
-```bash
+php artisan migrate:fresh --seed
 php artisan serve
 ```
 
@@ -99,59 +76,33 @@ Accéder à l'application : [http://localhost:8000](http://localhost:8000)
 
 ### Windows
 
-#### 1. Cloner le dépôt
-
-Dans un terminal (Git Bash, PowerShell ou CMD) :
+Dans Git Bash, PowerShell ou CMD :
 
 ```bash
 git clone https://github.com/HedyMalou/Projet_Dev_Web.git
 cd Projet_Dev_Web\laravel_app
-```
-
-#### 2. Installer les dépendances PHP
-
-```bash
 composer install
 ```
-
-#### 3. Configurer l'environnement
-
-```bash
-copy .env.example .env
-php artisan key:generate
-```
-
-Ouvrir `.env` avec un éditeur de texte et renseigner les accès MySQL :
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=nom_de_la_base
-DB_USERNAME=votre_utilisateur
-DB_PASSWORD=votre_mot_de_passe
-```
-
-> Si vous utilisez WAMP/XAMPP, l'utilisateur par défaut est `root` et le mot de passe est vide ou `root`.
-
-#### 4. Créer la base de données et exécuter les migrations
 
 Créer la base via phpMyAdmin ou en ligne de commande :
 
 ```bash
-mysql -u votre_utilisateur -p -e "CREATE DATABASE IF NOT EXISTS nom_de_la_base CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-php artisan migrate
+mysql -u <utilisateur> -p -e "CREATE DATABASE IF NOT EXISTS stages_cytech CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-#### 5. (Optionnel) Insérer des données de test
+Adapter les credentials dans `.env` :
 
-```bash
-php artisan db:seed
+```env
+DB_USERNAME=<utilisateur>
+DB_PASSWORD=<mot_de_passe>
 ```
 
-#### 6. Lancer le serveur de développement
+> Sous WAMP/XAMPP, l'utilisateur par défaut est `root` avec un mot de passe vide.
+
+Lancer les migrations et le seed :
 
 ```bash
+php artisan migrate:fresh --seed
 php artisan serve
 ```
 
@@ -159,29 +110,25 @@ Accéder à l'application : [http://localhost:8000](http://localhost:8000)
 
 ---
 
-## Comptes de test
+## Comptes disponibles (après seed)
 
-Les seeders créent des comptes pour chaque rôle. Les mots de passe sont hashés en BCrypt.
+| Rôle        | Email                          | Mot de passe |
+|-------------|--------------------------------|--------------|
+| Admin       | admin@cytech.fr                | admin1234    |
+| Étudiant    | hedy.ouerghi@etu.cyu.fr        | test1234     |
+| Tuteur      | titouan.ancelin@etu.cyu.fr     | test1234     |
+| Jury        | sophie.martin@etu.cyu.fr       | test1234     |
+| Entreprise  | contact@techcorp.fr            | test1234     |
 
-Pour générer un hash depuis le terminal :
-
-```bash
-php -r "echo password_hash('votre_mot_de_passe', PASSWORD_BCRYPT);"
-```
-
-Pour mettre à jour un mot de passe directement en base :
-
-```bash
-mysql -u votre_utilisateur -p nom_de_la_base \
-  -e "UPDATE UTILISATEUR SET mot_de_passe='<hash>' WHERE email='<email>';"
-```
+> Les étudiants peuvent se connecter directement après inscription.
+> Les tuteurs, jurys et entreprises doivent être validés par l'admin.
 
 ## Code A2F en développement local
 
-L'A2F envoie un code par email. En local, le mail ne part pas. Récupérer le code directement en base :
+L'A2F est activée. En local, le code ne part pas par email — le récupérer directement en base :
 
 ```bash
-mysql -u votre_utilisateur -p nom_de_la_base \
+mysql -u <utilisateur> -p stages_cytech \
   -e "SELECT code, date_expiration FROM AUTH_CODE ORDER BY id DESC LIMIT 1;"
 ```
 
@@ -191,40 +138,24 @@ mysql -u votre_utilisateur -p nom_de_la_base \
 
 ```
 Projet_Dev_Web/
-├── laravel_app/          # Application Laravel principale
+├── laravel_app/               # Application Laravel principale
 │   ├── app/
-│   │   ├── Http/
-│   │   │   ├── Controllers/   # Contrôleurs par rôle
-│   │   │   └── Middleware/    # Middleware auth.check
-│   │   └── Models/            # Modèles Eloquent (12 tables)
+│   │   ├── Http/Controllers/  # Contrôleurs par rôle
+│   │   └── Models/            # Modèles Eloquent
 │   ├── database/
-│   │   └── migrations/        # 12 migrations (tables métier)
+│   │   ├── migrations/        # Migrations (tables métier)
+│   │   └── seeders/           # Données de test
 │   ├── resources/views/       # Vues Blade par rôle
-│   │   ├── auth/              # Login, register, A2F
+│   │   ├── auth/
+│   │   ├── admin/
 │   │   ├── etudiant/
 │   │   ├── entreprise/
 │   │   ├── tuteur/
 │   │   ├── jury/
-│   │   ├── admin/
-│   │   └── layouts/           # Layout principal avec sidebar
-│   └── routes/web.php         # Toutes les routes
-├── frontend/             # Ancien front-end PHP (référence)
-├── backend/              # Ancien back-end PHP (référence)
-├── database/             # Script SQL initial (référence)
-└── docs/                 # Rapport et maquettes
-```
-
-## Workflow Git
-
-```bash
-# Avant de travailler — récupérer les dernières modifications
-git pull origin main
-
-# Créer une branche pour une nouvelle fonctionnalité
-git checkout -b feature/nom-de-la-feature
-
-# Committer et pousser
-git add .
-git commit -m "feat: description de la modification"
-git push origin feature/nom-de-la-feature
+│   │   └── layouts/
+│   └── routes/web.php
+├── frontend/                  # Ancien front-end PHP (référence)
+├── backend/                   # Ancien back-end PHP (référence)
+├── database/                  # Script SQL initial (référence)
+└── docs/                      # Rapport et maquettes
 ```
