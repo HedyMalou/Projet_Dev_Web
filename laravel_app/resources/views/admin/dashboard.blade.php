@@ -51,9 +51,16 @@
 </div>
 
 {{-- Comptes en attente de validation --}}
-@if($comptes_en_attente->isNotEmpty())
 <div class="section-card">
-  <div class="section-titre">Comptes en attente de validation ({{ $comptes_en_attente->count() }})</div>
+  <div class="section-titre">
+    Comptes en attente de validation
+    @if($comptes_en_attente->isNotEmpty())
+      <span style="background:#f59e0b;color:white;font-size:12px;padding:2px 8px;border-radius:10px;margin-left:8px;">{{ $comptes_en_attente->count() }}</span>
+    @endif
+  </div>
+  @if($comptes_en_attente->isEmpty())
+    <p style="color:var(--gris);font-size:14px;margin:0;">Aucun compte en attente de validation.</p>
+  @else
   <table>
     <thead>
       <tr>
@@ -72,11 +79,11 @@
         <td><span class="badge-role">{{ ucfirst($u->role) }}</span></td>
         <td>{{ \Carbon\Carbon::parse($u->created_at)->format('d/m/Y') }}</td>
         <td style="display:flex;gap:8px;">
-          <form method="POST" action="{{ route('admin.valider-compte', $u->id) }}" style="display:inline;">
+          <form method="POST" action="{{ route('admin.valider-compte', $u->id) }}">
             @csrf
             <button type="submit" class="btn-valider">Valider</button>
           </form>
-          <form method="POST" action="{{ route('admin.refuser-compte', $u->id) }}" style="display:inline;" onsubmit="return confirm('Refuser et supprimer ce compte ?')">
+          <form method="POST" action="{{ route('admin.refuser-compte', $u->id) }}" onsubmit="return confirm('Refuser et supprimer ce compte ?')">
             @csrf
             <button type="submit" class="btn-supprimer">Refuser</button>
           </form>
@@ -85,18 +92,26 @@
       @endforeach
     </tbody>
   </table>
+  @endif
 </div>
-@endif
 
 {{-- Affecter un tuteur à un étudiant --}}
-@if($candidatures_validees->isNotEmpty() && $tuteurs->isNotEmpty())
 <div class="section-card">
   <div class="section-titre">Affecter un tuteur à un étudiant</div>
+  @if($candidatures_validees->isEmpty() || $tuteurs->isEmpty())
+    <p style="color:var(--gris);font-size:14px;margin:0;">
+      @if($tuteurs->isEmpty())
+        Aucun tuteur disponible.
+      @else
+        Aucune candidature validée pour le moment.
+      @endif
+    </p>
+  @else
   <form method="POST" action="{{ route('admin.affecter-tuteur') }}" style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
     @csrf
     <div>
-      <label style="display:block;font-size:13px;margin-bottom:4px;">Candidature validée</label>
-      <select name="id_candidature" required style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-family:inherit;">
+      <label style="display:block;font-size:13px;margin-bottom:4px;">Étudiant — Offre</label>
+      <select name="id_candidature" required style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-family:inherit;min-width:260px;">
         @foreach($candidatures_validees as $c)
           <option value="{{ $c->id }}">
             {{ $c->etudiant->utilisateur->prenom ?? '' }} {{ $c->etudiant->utilisateur->nom ?? '' }}
@@ -107,7 +122,7 @@
     </div>
     <div>
       <label style="display:block;font-size:13px;margin-bottom:4px;">Tuteur</label>
-      <select name="id_tuteur" required style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-family:inherit;">
+      <select name="id_tuteur" required style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-family:inherit;min-width:200px;">
         @foreach($tuteurs as $t)
           <option value="{{ $t->id }}">
             {{ $t->utilisateur->prenom ?? '' }} {{ $t->utilisateur->nom ?? '' }}
@@ -117,13 +132,37 @@
     </div>
     <button type="submit" class="btn-action">Affecter</button>
   </form>
+  @endif
 </div>
-@endif
 
 {{-- Gestion utilisateurs --}}
 <div class="section-card">
   <div class="section-titre">Gestion des utilisateurs</div>
-  <table>
+
+  {{-- Barre recherche + filtre rôle --}}
+  <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+    <input
+      type="text"
+      id="recherche-users"
+      placeholder="Rechercher par nom ou email…"
+      style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:13px;flex:1;min-width:200px;"
+      oninput="filtrerUsers()"
+    >
+    <select
+      id="filtre-role"
+      style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:13px;"
+      onchange="filtrerUsers()"
+    >
+      <option value="">Tous les rôles</option>
+      <option value="etudiant">Étudiant</option>
+      <option value="tuteur">Tuteur</option>
+      <option value="jury">Jury</option>
+      <option value="entreprise">Entreprise</option>
+      <option value="admin">Admin</option>
+    </select>
+  </div>
+
+  <table id="table-users">
     <thead>
       <tr>
         <th>Nom</th>
@@ -135,7 +174,7 @@
     </thead>
     <tbody>
       @foreach($users as $u)
-      <tr>
+      <tr data-nom="{{ strtolower($u->prenom.' '.$u->nom) }}" data-email="{{ strtolower($u->email) }}" data-role="{{ $u->role }}">
         <td>{{ $u->prenom }} {{ $u->nom }}</td>
         <td>{{ $u->email }}</td>
         <td>
@@ -157,5 +196,33 @@
       @endforeach
     </tbody>
   </table>
+  <p id="aucun-resultat" style="display:none;color:var(--gris);font-size:14px;margin:8px 0 0;">Aucun résultat.</p>
 </div>
+
+<script>
+function filtrerUsers() {
+  const recherche = document.getElementById('recherche-users').value.toLowerCase();
+  const role = document.getElementById('filtre-role').value;
+  const lignes = document.querySelectorAll('#table-users tbody tr');
+  let visible = 0;
+
+  lignes.forEach(function(ligne) {
+    const nom   = ligne.dataset.nom   || '';
+    const email = ligne.dataset.email || '';
+    const r     = ligne.dataset.role  || '';
+
+    const matchRecherche = nom.includes(recherche) || email.includes(recherche);
+    const matchRole = role === '' || r === role;
+
+    if (matchRecherche && matchRole) {
+      ligne.style.display = '';
+      visible++;
+    } else {
+      ligne.style.display = 'none';
+    }
+  });
+
+  document.getElementById('aucun-resultat').style.display = visible === 0 ? '' : 'none';
+}
+</script>
 @endsection
