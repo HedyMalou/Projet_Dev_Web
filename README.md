@@ -136,8 +136,8 @@ sudo apt install -y git
 ### 6.  Cloner le projet
 
 ```bash
-git clone https://github.com/HedyMalou/Projet_Dev_Web_2.git
-cd Projet_Dev_Web_2/laravel_app
+git clone https://github.com/HedyMalou/Projet_Dev_Web.git
+cd Projet_Dev_Web/laravel_app
 ```
 
 ### 7.  Installer les dépendances PHP
@@ -193,8 +193,8 @@ php --version
 
 Ouvrir **Git Bash** (livré avec Git) ou **PowerShell** :
 ```bash
-git clone https://github.com/HedyMalou/Projet_Dev_Web_2.git
-cd Projet_Dev_Web_2/laravel_app
+git clone https://github.com/HedyMalou/Projet_Dev_Web.git
+cd Projet_Dev_Web/laravel_app
 composer install
 ```
 
@@ -225,8 +225,8 @@ mysql --version
 ### 3.  Cloner et installer le projet
 
 ```bash
-git clone https://github.com/HedyMalou/Projet_Dev_Web_2.git
-cd Projet_Dev_Web_2/laravel_app
+git clone https://github.com/HedyMalou/Projet_Dev_Web.git
+cd Projet_Dev_Web/laravel_app
 composer install
 ```
 
@@ -354,7 +354,7 @@ Sous **XAMPP / phpMyAdmin** : ouvrir la table `AUTH_CODE`, le dernier code gén�
 ## Structure du projet
 
 ```
-Projet_Dev_Web_2/
+Projet_Dev_Web/
 ├── GI_Groupe2_Groupe11.pdf          # Rapport final (livrable 4)
 ├── README.md                        # Ce fichier
 └── laravel_app/                     # Application Laravel
